@@ -1,0 +1,6 @@
+{% load static %}
+{% for mbti in mbti_list %}
+    <ul>
+        <li> <a href="/type/{{mbti.name}}/"/> {{mbti.name}} </li>
+    </ul>
+{% endfor %}
