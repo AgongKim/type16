@@ -2,7 +2,7 @@ from django.urls import path, include
 from . import views
 
 api_keyword_urls = [
-    path('create/', views.KeywordCreateAPI.as_view(), name='keyword_create'),
+    path('', views.KeywordCreateAPI.as_view(), name='list'),
 ]
 
 urlpatterns = [

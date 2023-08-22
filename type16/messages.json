@@ -1,6 +1,7 @@
 {
     "article_not_found" : "존재하지 않는 게시물입니다",
     "comment_not_found" : "존재하지 않는 댓글입니다",
+    "mbti_not_found" : "존재하지 않는 mbti입니다.",
     "no_username" : "아이디는 필수 입력사항입니다.",
     "invalid_format" : "잘못된 형식입니다.",
     "parameter_missing" : "필수 항목을 채워주세요.",
@@ -15,7 +16,6 @@
     "abnormal_status" : "이용 가능한 상태가 아닙니다.",
     "invalid_category" : "접근 권합이 없습니다.",
     "no_hits_control" : "조회수는 바꿀 수 없습니다.",
-    "mbti_not_found" : "타입 코드를 찾을 수 없습니다",
     "internal_error" : "서버 에러"
 }
 
