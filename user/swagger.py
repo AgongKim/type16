@@ -34,6 +34,19 @@ swagger_user_delete = GetSwagger(
     summary="유저 삭제 api"
 ).get_auto_schema()
 
+
+swagger_user_get = GetSwagger(
+    params = {},
+    examples_={
+        "application/json": {
+            "gcode": 0,
+            "success": True,
+            "data": "<userdata>"
+        }
+    },
+    summary="내 정보보기 api"
+).get_auto_schema()
+
 swagger_user_detail = GetSwagger(
     params = {
         "user_id": openapi.TYPE_INTEGER

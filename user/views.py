@@ -15,6 +15,7 @@ from .serializers import *
 class UserAPI(APIView):
     swagger_tags = ['users']
 
+
     @swagger_user_post
     @user_post_validator
     def post(self, request):
@@ -59,7 +60,11 @@ class UserAPI(APIView):
         user.is_active = False
         user.save()
         return SuccessResponse()
-
+    
+    @swagger_user_get
+    @auth_required
+    def get(self, request):
+        return SuccessResponse(UserSerializer(request.user).data)
 
 
 class UserDetailAPI(APIView):
