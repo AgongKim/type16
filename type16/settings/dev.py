@@ -64,7 +64,7 @@ INSTALLED_APPS = [
     'article',
     'comment',
     'keywords',
-    'corsheaders',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -76,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'middleware.debugger.ApiLoggingMiddleware'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
