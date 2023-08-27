@@ -17,6 +17,15 @@ class KeywordCreateAPI(APIView):
         try:
             _data = json.loads(request.body)
             user = request.user if not isinstance(request.user, AnonymousUser) else None
+            q = {}
+            if _data.get('mbti_id'):
+                q['id'] =  _data.get('mbti_id')
+            if _data.get('mbti'):
+                q['name'] = _data.get('mbti')
+            if not q or not _data.get('content'):
+                raise FailResponse('parameter_missing')
+
+            mbti = Mbti.objects.get(**q)
             # 데이터 수집을 위해 로그인 x 여러개 o
             # old_one = Keyword.objects.filter(user=user, mbti=_data.get('mbti_id')).first()
             # if old_one:
@@ -25,7 +34,7 @@ class KeywordCreateAPI(APIView):
             # else:
             Keyword.objects.create(
                 user = user,
-                mbti_id = _data.get('mbti_id'),
+                mbti = mbti,
                 content = _data.get('content'),
             )
             return SuccessResponse()
@@ -37,7 +46,6 @@ class KeywordCreateAPI(APIView):
     @swagger_keywords_get
     def get(self, request):
         try:
-            
             _mbti = request.GET.get('mbti')
             mbti_id = request.GET.get('mbti_id')
             mbti = Mbti.objects.get( Q(id=mbti_id)| Q(name=_mbti))

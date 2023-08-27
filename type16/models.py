@@ -31,10 +31,6 @@ class Mbti(ModelBase):
     title=models.CharField(max_length=200, help_text="타이틀(ex:전략가,성인군자..)")
     description=models.TextField(help_text="해당 mbti에 대한 설명")
     image_url=models.CharField(max_length=3000)
-    ei=models.CharField(max_length=1, choices=EI_CHOICES, help_text="주의초점")
-    ns=models.CharField(max_length=1, choices=NS_CHOICES, help_text="인식기능")
-    tf=models.CharField(max_length=1, choices=TF_CHOICES, help_text="판단기능")
-    pj=models.CharField(max_length=1, choices=PJ_CHOICES, help_text="생활양식")
     class Meta:
         db_table = "t_mbti"
     
