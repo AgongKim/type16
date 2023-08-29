@@ -3,18 +3,18 @@ from utils.swagger_base import *
 
 swagger_comment_post = PostSwagger(
     params = {
-        "mbti_id": openapi.TYPE_STRING,
+        'article': openapi.TYPE_INTEGER,
+        'mbti': openapi.TYPE_STRING,
         "content": openapi.TYPE_STRING
     },
-    required = ["category", "mbti_id"],
     summary = '[유저트큰 필요] 댓글 작성 api'
 ).get_auto_schema()
 
 swagger_comment_get = GetSwagger(
     params = {
-        'offset': openapi.TYPE_INTEGER,
-        'limit': openapi.TYPE_INTEGER,
-        'article_id': openapi.TYPE_INTEGER
+        'page': openapi.TYPE_INTEGER,
+        'article': openapi.TYPE_INTEGER,
+        'mbti': openapi.TYPE_STRING
     },
     examples_={
         "application/json": {
@@ -30,8 +30,13 @@ swagger_comment_get = GetSwagger(
 
 swagger_comment_like = PostSwagger(
     params={
-        "comment_id": openapi.TYPE_INTEGER,
+        "comment": openapi.TYPE_INTEGER,
     }, 
     required = ['comment_id'], 
+    examples_={
+        "application/json": {
+            "status": "liked|unliked"
+        }
+    },
     summary='[유저토큰 필요] 댓글 좋아요 / 취소 api'
 ).get_auto_schema()

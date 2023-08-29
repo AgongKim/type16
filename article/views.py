@@ -6,10 +6,9 @@ from utils.responses import FailResponse, SuccessResponse, get_msg
 from utils.decorators import auth_required
 
 from type16.models import Article, Comment, ArticleLike
-from comment.serializers import CommentSerializer
+from comment.serializers import getCommentSerializer
 
 from .swagger import *
-from .validators import *
 from .serializers import *
 
 class ArticleAPI(APIView):
@@ -17,7 +16,6 @@ class ArticleAPI(APIView):
 
     @swagger_article_post
     @auth_required
-    @article_post_validator
     def post(self, request):
         try:
             _data = json.loads(request.body)
@@ -60,7 +58,7 @@ class ArticleDetailAPI(APIView):
 
             return SuccessResponse(
                 data=ArticleSerializer(article, many=False).data,
-                comment=CommentSerializer(comment, many=True).data
+                comment=getCommentSerializer(comment, many=True).data
             )
         except Exception as e:
             print(e)
@@ -86,7 +84,6 @@ class ArticleLikeAPI(APIView):
 
     @swagger_article_like
     @auth_required
-    @article_like_validator
     def post(self, request):
         try:
             user = request.user

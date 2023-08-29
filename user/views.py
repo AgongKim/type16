@@ -9,7 +9,6 @@ from utils.responses import FailResponse, SuccessResponse, get_msg
 from utils.decorators import auth_required
 
 from .swagger import *
-from .validators import *
 from .serializers import *
 
 class UserAPI(APIView):
@@ -17,7 +16,6 @@ class UserAPI(APIView):
 
 
     @swagger_user_post
-    @user_post_validator
     def post(self, request):
         try:
             ## 추후 인증 과정 및 카카오 로그인 등 구현
@@ -33,7 +31,6 @@ class UserAPI(APIView):
     
     @swagger_user_patch
     @auth_required
-    @user_patch_validator
     def patch(self, request, _data):
         u = request.user
         if 'password' in _data:

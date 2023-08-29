@@ -27,7 +27,7 @@ class Mbti(ModelBase):
         ('J', 'Judging')
     ]
 
-    name=models.CharField(max_length=10, choices=constants.MBTI_TYPE)
+    name=models.CharField(max_length=10, choices=constants.MBTI_TYPE, unique=True)
     title=models.CharField(max_length=200, help_text="타이틀(ex:전략가,성인군자..)")
     description=models.TextField(help_text="해당 mbti에 대한 설명")
     image_url=models.CharField(max_length=3000)
