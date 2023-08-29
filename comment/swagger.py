@@ -7,6 +7,7 @@ swagger_comment_post = PostSwagger(
         'mbti': openapi.TYPE_STRING,
         "content": openapi.TYPE_STRING
     },
+    required=[],
     summary = '[유저트큰 필요] 댓글 작성 api'
 ).get_auto_schema()
 

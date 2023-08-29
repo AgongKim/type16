@@ -13,8 +13,8 @@ swagger_article_post = PostSwagger(
 
 swagger_article_get = GetSwagger(
     params = {
-        'offset': openapi.TYPE_INTEGER,
-        'limit': openapi.TYPE_INTEGER,
+        'page' : openapi.TYPE_INTEGER,
+        'category' : openapi.TYPE_STRING,
     },
     examples_={
         "application/json": {
@@ -54,8 +54,8 @@ swagger_article_categories = GetSwagger(
 
 swagger_article_like = PostSwagger(
     params={
-        "article_id": openapi.TYPE_INTEGER,
+        "article": openapi.TYPE_INTEGER,
     }, 
-    required = ['article_id'], 
+    required = ['article'], 
     summary='[유저토큰 필요] 게시글 좋아요 / 취소 api'
 ).get_auto_schema()

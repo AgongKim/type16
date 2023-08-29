@@ -1,15 +1,19 @@
 import json
-from django.core.paginator import Paginator
+from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+
+from utils.drfcustoms import get_paginated_response
 
 from utils.responses import FailResponse, SuccessResponse, get_msg
 from utils.decorators import auth_required
 
 from type16.models import Article, Comment, ArticleLike
-from comment.serializers import getCommentSerializer
 
 from .swagger import *
 from .serializers import *
+from .selector import *
 
 class ArticleAPI(APIView):
     swagger_tags = ['article']
@@ -17,34 +21,32 @@ class ArticleAPI(APIView):
     @swagger_article_post
     @auth_required
     def post(self, request):
-        try:
-            _data = json.loads(request.body)
-            _data["user"] = request.user
-            article = Article.objects.create(**_data)
-            return SuccessResponse(data = ArticleSerializer(article).data)
-        except Exception as e:
-            print(e)
-            return FailResponse(get_msg("internal_error"))
+        serializer = postArticleSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
+    class FilterSerializer(serializers.Serializer):
+        category = serializers.CharField(required=True)
+        page = serializers.IntegerField(required=False)
+        
+    class Pagination(PageNumberPagination):
+        page_size = 20
+
     @swagger_article_get
     def get(self, request):
-        offset = request.GET.get('offset', 1)
-        limit = request.GET.get('limit', 20)
-        category = request.GET.get('category')
+        param_serializer = self.FilterSerializer(data=request.query_params)
+        param_serializer.is_valid(raise_exception=True)
 
-        total_list = Article.objects.all()
-        if category:
-            total_list.filter(category=category)
-        total_list.order_by('-created_at')
+        comments = article_list(filters=param_serializer.validated_data)
 
-        paginator = Paginator(total_list, limit)
-        cutoff_list = paginator.get_page(offset)
-        total_count = total_list.count()
-        count = len(cutoff_list)
-        
-        return SuccessResponse(
-            total_count=total_count, count=count,
-            data=ArticleSerializer(cutoff_list, many=True).data)
+        return get_paginated_response(
+                pagination_class=self.Pagination,
+                serializer_class=getArticleSerializer,
+                queryset=comments,
+                request=request,
+                view=self
+            )
 
 
 class ArticleDetailAPI(APIView):
@@ -52,17 +54,11 @@ class ArticleDetailAPI(APIView):
 
     @swagger_article_detail
     def get(self, request, article_id):
-        try:
-            article = Article.objects.get(id=article_id)
-            comment = Comment.objects.filter(article_id=article_id)
+        article = article_get(id=article_id)
 
-            return SuccessResponse(
-                data=ArticleSerializer(article, many=False).data,
-                comment=getCommentSerializer(comment, many=True).data
-            )
-        except Exception as e:
-            print(e)
-            return FailResponse(get_msg("invalid_format")) 
+        serializer = getArticleSerializer(article)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ArticleCategoriesAPI(APIView):
@@ -76,7 +72,7 @@ class ArticleCategoriesAPI(APIView):
         for key,value in BOARD_CATEGORIES:
             result[key] = value
 
-        return SuccessResponse(data=result)
+        return Response(data=result, status=status.HTTP_200_OK)
     
 
 class ArticleLikeAPI(APIView):
@@ -85,18 +81,18 @@ class ArticleLikeAPI(APIView):
     @swagger_article_like
     @auth_required
     def post(self, request):
-        try:
-            user = request.user
-            _data = json.loads(request.body)
-            article_id = _data.get('article_id')
+        user = request.user
+        _data = request.data
+        article_id = _data.get('article')
 
-            if ArticleLike.objects.filter(article_id=article_id, user=user).exists():
-                ArticleLike.objects.filter(article_id=article_id, user=user).delete()
-            else:
-                ArticleLike.objects.create(
-                    user = user,
-                    article_id = article_id
-                )
-        except Exception as e:
-            print(e)
-            return FailResponse(get_msg("invalid_format"))
+        if ArticleLike.objects.filter(article_id=article_id, user=user).exists():
+            ArticleLike.objects.filter(article_id=article_id, user=user).delete()
+            status = "unliked"
+        else:
+            ArticleLike.objects.create(
+                user = user,
+                article_id = article_id
+            )
+            status = "liked"
+
+        return Response(data={"status":status}, status=status.HTTP_200_OK)
