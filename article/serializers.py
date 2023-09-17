@@ -1,11 +1,12 @@
 from rest_framework import serializers
-from type16.models import Article, Comment, User, Mbti
+from type16.models import Article, ArticleLike, User
 from type16.constants import BOARD_CATEGORIES
 
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = "__all__"
+
 
 class postArticleSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all() ,default=serializers.CurrentUserDefault())
@@ -25,3 +26,11 @@ class getArticleSerializer(serializers.ModelSerializer):
         model = Article
         fields = "__all__"
     
+
+class postArticleLikeSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all() ,default=serializers.CurrentUserDefault())
+    article = serializers.PrimaryKeyRelatedField(queryset=Article.objects.all(), required=True)
+
+    class Meta:
+        model = ArticleLike
+        fields = "__all__"

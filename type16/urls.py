@@ -47,6 +47,5 @@ urlpatterns = [
     path('', include('user.urls')),
     path('', include('article.urls')),
     path('', include('comment.urls')),
-    path('', include('mtype.urls')),
     path('', include('keywords.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

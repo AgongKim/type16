@@ -1,12 +1,18 @@
 import json
 from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+
 from .swagger import *
-from .serializers import KeywordSerializer
+from .serializers import *
+from .selector import *
 from type16.models import Keyword, Mbti
 from utils.responses import FailResponse, SuccessResponse, get_msg
 from utils.decorators import auth_required
 from django.db.models import Q, Count
 from django.contrib.auth.models import AnonymousUser
+from utils.drfcustoms import get_paginated_response
 
 class KeywordCreateAPI(APIView):
     swagger_tags = ['keywords']
@@ -14,51 +20,29 @@ class KeywordCreateAPI(APIView):
     @swagger_keywords_post
     # @auth_required
     def post(self, request):
-        try:
-            _data = json.loads(request.body)
-            user = request.user if not isinstance(request.user, AnonymousUser) else None
-            q = {}
-            if _data.get('mbti_id'):
-                q['id'] =  _data.get('mbti_id')
-            if _data.get('mbti'):
-                q['name'] = _data.get('mbti')
-            if not q or not _data.get('content'):
-                raise FailResponse('parameter_missing')
+        serializer = postKeywordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-            mbti = Mbti.objects.get(**q)
-            # 데이터 수집을 위해 로그인 x 여러개 o
-            # old_one = Keyword.objects.filter(user=user, mbti=_data.get('mbti_id')).first()
-            # if old_one:
-            #     old_one.content = _data.get('content')
-            #     old_one.save(update_fields=['content'])
-            # else:
-            Keyword.objects.create(
-                user = user,
-                mbti = mbti,
-                content = _data.get('content'),
-            )
-            return SuccessResponse()
-
-        except Exception as e:
-            print(e)
-            return FailResponse(get_msg("invalid_format"))
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
+
+    class FilterSerializer(serializers.Serializer):
+        mbti = serializers.CharField(required=True)
+
     @swagger_keywords_get
     def get(self, request):
-        try:
-            _mbti = request.GET.get('mbti')
-            mbti_id = request.GET.get('mbti_id')
-            mbti = Mbti.objects.get( Q(id=mbti_id)| Q(name=_mbti))
-            keywords = Keyword.objects.filter(mbti=mbti)\
-                .values('content')\
-                .annotate(count=Count('content'))\
-                .order_by('-count')[0:30]
+        page_size = 20
 
-            return SuccessResponse(
-                data=list(keywords),
-            )
-        except (Mbti.DoesNotExist, Mbti.MultipleObjectsReturned):
-            return FailResponse(get_msg('mbti_not_found'))
-        except Exception as e:
-            print(e)
-            return FailResponse(get_msg("invalid_format"))
+        param_serializer = self.FilterSerializer(data=request.query_params)
+        param_serializer.is_valid(raise_exception=True)
+
+        page = int(request.query_params.get('page',1))
+        offset = ( page - 1 ) * page_size
+        limit = page_size * page
+
+        queryset = keyword_list(filters=param_serializer.validated_data)
+        
+        data = queryset.values('content').annotate(count=Count('content')).order_by('-count')[offset:limit]
+        
+        return Response(data=dict(keywords=data), status=status.HTTP_201_CREATED)

@@ -23,7 +23,7 @@ class ArticleAPI(APIView):
     def post(self, request):
         serializer = postArticleSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.validated_data
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     class FilterSerializer(serializers.Serializer):
@@ -38,7 +38,7 @@ class ArticleAPI(APIView):
         param_serializer = self.FilterSerializer(data=request.query_params)
         param_serializer.is_valid(raise_exception=True)
 
-        comments = article_list(filters=param_serializer.validated_data)
+        comments = article_list(filters=param_serializer.validated_data).order_by('-id')
 
         return get_paginated_response(
                 pagination_class=self.Pagination,
@@ -68,9 +68,7 @@ class ArticleCategoriesAPI(APIView):
     def get(self,request):
         from type16.constants import BOARD_CATEGORIES
 
-        result = {}
-        for key,value in BOARD_CATEGORIES:
-            result[key] = value
+        result = {key:value for key,value in BOARD_CATEGORIES}
 
         return Response(data=result, status=status.HTTP_200_OK)
     
@@ -81,18 +79,11 @@ class ArticleLikeAPI(APIView):
     @swagger_article_like
     @auth_required
     def post(self, request):
-        user = request.user
-        _data = request.data
-        article_id = _data.get('article')
+        if try_delete_articlelike(request=request):
+            return Response(data={"status":"disliked"}, status=status.HTTP_200_OK)
 
-        if ArticleLike.objects.filter(article_id=article_id, user=user).exists():
-            ArticleLike.objects.filter(article_id=article_id, user=user).delete()
-            status = "unliked"
-        else:
-            ArticleLike.objects.create(
-                user = user,
-                article_id = article_id
-            )
-            status = "liked"
+        serializer = postArticleLikeSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()       
 
-        return Response(data={"status":status}, status=status.HTTP_200_OK)
+        return Response(data={"status":"liked"}, status=status.HTTP_200_OK)

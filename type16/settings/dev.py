@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'user',
     'type16',
-    'mtype',
     'article',
     'comment',
     'keywords',

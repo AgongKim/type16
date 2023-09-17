@@ -37,3 +37,12 @@ class getCommentSerializer(serializers.ModelSerializer):
             if CommentLike.objects.filter(comment=obj, user=self.context['request'].user).exists():
                 return True
         return False
+
+
+class postCommentLikeSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all() ,default=serializers.CurrentUserDefault())
+    comment = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all(), required=True)
+
+    class Meta:
+        model = CommentLike
+        fields = "__all__"

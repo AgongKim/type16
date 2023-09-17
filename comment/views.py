@@ -46,7 +46,7 @@ class CommentAPI(APIView):
         param_serializer = self.FilterSerializer(data=request.query_params)
         param_serializer.is_valid(raise_exception=True)
 
-        comments = comment_list(filters=param_serializer.validated_data)
+        comments = comment_list(filters=param_serializer.validated_data).order_by('-id')
 
         return get_paginated_response(
                 pagination_class=self.Pagination,
@@ -63,18 +63,11 @@ class CommentLikeAPI(APIView):
     @swagger_comment_like
     @auth_required
     def post(self, request):
-        user = request.user
-        _data = request.data
-        comment_id = _data.get('comment')
+        if try_delete_commentlike(request=request):
+            return Response(data={"status":"disliked"}, status=status.HTTP_200_OK)
 
-        if CommentLike.objects.filter(comment_id=comment_id, user=user).exists():
-            CommentLike.objects.filter(comment_id=comment_id, user=user).delete()
-            status = "unliked"
-        else:
-            CommentLike.objects.create(
-                user = user,
-                comment_id = comment_id
-            )
-            status = "liked"
+        serializer = postCommentLikeSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()       
 
-        return Response(data={"status":status}, status=status.HTTP_200_OK)
+        return Response(data={"status":"liked"}, status=status.HTTP_200_OK)

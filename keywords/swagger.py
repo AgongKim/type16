@@ -13,8 +13,8 @@ swagger_keywords_post = PostSwagger(
 
 swagger_keywords_get = GetSwagger(
     params = {
-        'mbti_id': openapi.TYPE_INTEGER,
         'mbti': openapi.TYPE_STRING,
+        'page': openapi.TYPE_INTEGER,
     },
     examples_={
         "application/json": {
